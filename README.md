@@ -82,13 +82,11 @@ with `nc <bridge> 2000 > capture.bin`).
 ## Publish
 
 1. Add the GitHub topic `gladys-assistant-integration` to the repository.
-2. Replace `cover.png` (800×534 px, ≤150 KB) — the current one is the
-   template placeholder.
-3. Describe the changes under `## [Unreleased]` in `CHANGELOG.md`, then run
+2. Describe the changes under `## [Unreleased]` in `CHANGELOG.md`, then run
    **Actions → Release → Run workflow** (patch / minor / major). It bumps the
    versions, tags, builds the multi-arch image to `ghcr.io` and creates the
    GitHub Release.
-4. Make the `ghcr.io` package public, then check with
+3. Make the `ghcr.io` package public, then check with
    `npx github:GladysAssistant/integration-store .`
 
 ## License
