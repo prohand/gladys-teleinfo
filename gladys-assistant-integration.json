@@ -6,8 +6,8 @@
     "en": "Reads your Linky or electronic meter through the LiXee TIC module.",
     "fr": "Lit votre compteur Linky ou électronique via le module TIC LiXee."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/prohand/gladys-teleinfo:1.0.0",
+  "version": "1.0.1",
+  "docker_image": "ghcr.io/prohand/gladys-teleinfo:1.0.1",
   "gladys_version": ">=4.86.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-teleinfo/main/cover.png",
   "categories": ["energy"],
@@ -15,7 +15,10 @@
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Getting started",
+        "fr": "Pour commencer"
+      },
       "description": {
         "en": "Gladys integrations cannot open a USB port. Plug the LiXee TIC module into a machine of your network and share it with ser2net (raw TCP, 1200 bauds 7E1 in historic mode, 9600 bauds 7E1 in standard mode), then enter its address below.",
         "fr": "Les intégrations Gladys ne peuvent pas ouvrir un port USB. Branchez le module TIC LiXee sur une machine de votre réseau et partagez-le avec ser2net (TCP brut, 1200 bauds 7E1 en mode historique, 9600 bauds 7E1 en mode standard), puis indiquez son adresse ci-dessous."
@@ -23,30 +26,45 @@
       "links": [
         {
           "url": "https://github.com/prohand/gladys-teleinfo/blob/main/docs/fr.md",
-          "label": { "en": "Step-by-step guide", "fr": "Guide pas à pas" }
+          "label": {
+            "en": "Step-by-step guide",
+            "fr": "Guide pas à pas"
+          }
         }
       ]
     },
     {
       "key": "host",
       "type": "string",
-      "label": { "en": "Bridge address", "fr": "Adresse de la passerelle" },
+      "label": {
+        "en": "Bridge address",
+        "fr": "Adresse de la passerelle"
+      },
       "description": {
         "en": "IP address or host name of the machine running ser2net.",
         "fr": "Adresse IP ou nom de la machine qui fait tourner ser2net."
       },
-      "placeholder": { "en": "e.g. 192.168.1.20", "fr": "ex. 192.168.1.20" },
+      "placeholder": {
+        "en": "e.g. 192.168.1.20",
+        "fr": "ex. 192.168.1.20"
+      },
       "required": true
     },
     {
       "key": "port",
       "type": "number",
-      "label": { "en": "TCP port", "fr": "Port TCP" },
+      "label": {
+        "en": "TCP port",
+        "fr": "Port TCP"
+      },
       "description": {
         "en": "TCP port ser2net listens on for the TIC module.",
         "fr": "Port TCP sur lequel ser2net écoute pour le module TIC."
       },
-      "placeholder": { "en": "e.g. 2000", "fr": "ex. 2000" },
+      "placeholder": {
+        "en": "e.g. 2000",
+        "fr": "ex. 2000"
+      },
       "required": true,
       "default": 2000,
       "min": 1,
@@ -55,7 +73,10 @@
     {
       "key": "publish_interval",
       "type": "number",
-      "label": { "en": "Publish interval (s)", "fr": "Intervalle d'envoi (s)" },
+      "label": {
+        "en": "Publish interval (s)",
+        "fr": "Intervalle d'envoi (s)"
+      },
       "description": {
         "en": "How often the values are sent to Gladys, in seconds. Unchanged values are not re-sent.",
         "fr": "Fréquence d'envoi des valeurs à Gladys, en secondes. Les valeurs inchangées ne sont pas renvoyées."
@@ -69,7 +90,10 @@
   "actions": [
     {
       "key": "test_connection",
-      "label": { "en": "Test the connection", "fr": "Tester la connexion" },
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion"
+      },
       "timeout_seconds": 30
     }
   ]

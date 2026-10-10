@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-10
+
 ### Added
 
 - First version: reads the Enedis TIC of a Linky or electronic meter through the LiXee TIC
@@ -21,4 +23,5 @@ All notable changes to this integration are documented here. The format follows
   store admission checks; Dependabot keeps the npm dependencies, the GitHub Actions and the
   Docker base image up to date.
 
-[Unreleased]: https://github.com/prohand/gladys-teleinfo/commits/main
+[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/prohand/gladys-teleinfo/releases/tag/v1.0.1
