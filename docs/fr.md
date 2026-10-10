@@ -92,6 +92,32 @@ distributeur), énergie injectée, puissance apparente instantanée et
 maximale, courant et tension efficaces, tension moyenne, courbe de charge,
 puissance de référence et de coupure, tarif en cours.
 
+## Scènes (Gladys 5.1 ou plus récent)
+
+Dans l'éditeur de scènes, catégorie **Intégrations** :
+
+- **Changement de période tarifaire** (déclencheur) : lance la scène quand le
+  compteur passe d'une période à l'autre. Filtrez éventuellement sur la
+  **nouvelle période** (heures creuses, heures pleines, base, autre), par
+  exemple pour lancer le chauffe-eau en heures creuses. Variables :
+  `{{triggerEvent.data.period}}` (libellé du compteur),
+  `{{triggerEvent.data.period_type}}`, `{{triggerEvent.data.previous_period}}`.
+- **Dépassement de puissance souscrite** (déclencheur) : la puissance dépasse
+  votre abonnement (risque de disjonction). Un seul déclenchement par
+  dépassement, même si la puissance oscille autour de la limite. Variable :
+  `{{triggerEvent.data.power}}` (VA). En mode historique, c'est l'étiquette
+  ADPS du compteur ; en mode standard, la puissance apparente au-dessus de la
+  puissance de référence (PREF).
+- **Lire le compteur** (action) : renvoie `available` (le compteur répond),
+  `power` (VA), `period`, `period_type`, `index_kwh` et `overload`, à utiliser
+  dans les actions suivantes (condition, message…).
+
+## Tableau de bord (Gladys 5.1 ou plus récent)
+
+Ajoutez le widget **Compteur électrique** et choisissez le compteur : puissance
+en direct, index total, courbe de puissance sur 24 h, période tarifaire,
+dépassement en cours et état de la réception des trames.
+
 ## Dépannage
 
 - **« Impossible de joindre … »** : mauvaise adresse ou mauvais port, ser2net

@@ -93,7 +93,7 @@ test('a standard Linky becomes a device with the core teleinformation types', ()
   assert.equal(stateOf(states, 'sinsts'), 718);
   assert.equal(stateOf(states, 'smaxsn'), 3018);
   assert.equal(stateOf(states, 'umoy1'), 231);
-  assert.equal(stateOf(states, 'ltarf'), 'HEURE  PLEINE');
+  assert.equal(stateOf(states, 'ltarf'), 'HEURE PLEINE');
   assert.equal(stateOf(states, 'ntarf'), 2);
 });
 

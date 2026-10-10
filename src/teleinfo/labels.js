@@ -16,6 +16,7 @@ import {
   DEVICE_FEATURE_UNITS as UNITS,
 } from '@gladysassistant/integration-sdk';
 import { MODES } from './frame.js';
+import { periodLabel } from './reading.js';
 
 // Value converters: the TIC sends digits, with leading zeros.
 const toInteger = (value) => {
@@ -29,7 +30,8 @@ const whToKwh = (value) => {
   const wh = toInteger(value);
   return wh === null ? null : wh / 1000;
 };
-const toText = (value) => value.replace(/\.+$/, '').trim() || null;
+// Same cleaning as the scene triggers, so the feature and the event agree.
+const toText = periodLabel;
 
 const ENERGY_INDEX_MAX = 1_000_000_000; // kWh, a 9-digit Wh index fits easily
 

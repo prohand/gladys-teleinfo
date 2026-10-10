@@ -36,6 +36,9 @@ reads the stream over TCP.
   changed values only, plus a full refresh every 10 minutes.
 - Connection status in the Configuration screen and a **Test the connection**
   action.
+- Gladys 5.1+: scene triggers **Tariff period changed** and **Subscribed power
+  exceeded**, scene action **Read the meter**, and an **Electricity meter**
+  dashboard widget (live power, index, 24 h curve, tariff, overload).
 
 ## Project structure
 

@@ -21,10 +21,14 @@ const MAX_STATES_PER_REQUEST = 100;
 export class TeleinfoHub {
   /**
    * @param {object} gladys SDK instance
-   * @param {{ publishIntervalMs: number, now?: () => number }} options
+   * @param {{ publishIntervalMs: number, now?: () => number,
+   *   onEvent?: (key: string, data: object) => void }} options
+   *   `onEvent` is called after every scene event fired (e.g. to refresh the
+   *   widgets, whose status rows follow the same transitions).
    */
-  constructor(gladys, { publishIntervalMs, now = Date.now }) {
+  constructor(gladys, { publishIntervalMs, now = Date.now, onEvent = () => {} }) {
     this.gladys = gladys;
+    this.onEvent = onEvent;
     this.publishIntervalMs = publishIntervalMs;
     this.now = now;
     this.meters = new Map();
@@ -59,6 +63,19 @@ export class TeleinfoHub {
   /** Time of the last valid frame, 0 when none was received. */
   lastFrameAt() {
     return this.latestMeter()?.lastFrameAt ?? 0;
+  }
+
+  /**
+   * The meter of a Gladys device, from its external_id (the value a
+   * `"source": "devices"` select stores), or null.
+   */
+  findMeter(deviceExternalId) {
+    for (const meter of this.meters.values()) {
+      if (meter.ids(this.gladys).device === deviceExternalId) {
+        return meter;
+      }
+    }
+    return null;
   }
 
   /** Re-send every value at the next publication (e.g. after a scan). */
@@ -109,6 +126,9 @@ export class TeleinfoHub {
     for (const waiter of [...this.waiters]) {
       waiter(meter);
     }
+    for (const event of meter.detectEvents(now)) {
+      this.fireSceneEvent(meter, event);
+    }
 
     // Frames keep coming while a request is in flight: they are recorded
     // above, the next frame after the request publishes them.
@@ -129,6 +149,17 @@ export class TeleinfoHub {
     } finally {
       this.busy = false;
     }
+  }
+
+  // Fire-and-forget: a refused event (429, Gladys restarting) must not delay
+  // the states, and the next transition fires its own event anyway.
+  fireSceneEvent(meter, { key, data }) {
+    const payload = { device: meter.ids(this.gladys).device, ...data };
+    logger.info(`Scene event ${key} (meter ${meter.id})`);
+    this.gladys
+      .publishSceneEvent(key, payload)
+      .catch((err) => logger.error(`publishSceneEvent ${key} failed`, err));
+    this.onEvent(key, payload);
   }
 
   async publishStates(now = this.now()) {

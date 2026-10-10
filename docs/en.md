@@ -90,6 +90,29 @@ energy, exported energy, instantaneous and maximum apparent power, RMS current
 and voltage, average voltage, load curve, reference and cut-off power,
 current tariff.
 
+## Scenes (Gladys 5.1 or later)
+
+In the scene editor, **Integrations** category:
+
+- **Tariff period changed** (trigger): starts the scene when the meter
+  switches period. Optionally filter on the **new period** (off-peak, peak,
+  single rate, other), e.g. to start the water heater at off-peak hours.
+  Variables: `{{triggerEvent.data.period}}` (meter label),
+  `{{triggerEvent.data.period_type}}`, `{{triggerEvent.data.previous_period}}`.
+- **Subscribed power exceeded** (trigger): the power goes over your
+  subscription (risk of tripping). One trigger per overload, even when the
+  power hovers around the limit. Variable: `{{triggerEvent.data.power}}` (VA).
+  In historic mode it is the meter's ADPS label; in standard mode, the
+  apparent power above the reference power (PREF).
+- **Read the meter** (action): returns `available` (the meter answers),
+  `power` (VA), `period`, `period_type`, `index_kwh` and `overload`, for the
+  following actions (condition, message…).
+
+## Dashboard (Gladys 5.1 or later)
+
+Add the **Electricity meter** widget and pick the meter: live power, total
+index, 24 h power curve, tariff period, overload and frame reception.
+
 ## Troubleshooting
 
 - **"Cannot reach …"**: wrong address or port, ser2net stopped, or firewall.

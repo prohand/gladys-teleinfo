@@ -8,8 +8,15 @@
 
 import { LABELS, METER_ID_LABEL, featureKey } from './labels.js';
 import { MODES } from './frame.js';
+import { readingOf } from './reading.js';
+import { SCENE_TRIGGERS } from '../sceneTriggers.js';
 
 const DEVICE_TYPE = 'meter';
+
+// ADPS comes and goes from one frame to the next while the power hovers
+// around the limit: an overload only ends after this long without one, so a
+// scene fires once per overload, not once per frame (300 events/min cap).
+export const OVERLOAD_END_MS = 60_000;
 
 /**
  * Serial number of the meter that sent a frame, or null when the frame does
@@ -36,6 +43,56 @@ export class Meter {
     );
     this.lastFrame = null;
     this.lastFrameAt = 0;
+    this.lastPeriod = null;
+    this.lastOverloadAt = 0;
+  }
+
+  /** Power, tariff period, total index and overload of the last frame. */
+  reading() {
+    return this.lastFrame ? readingOf(this.lastFrame) : null;
+  }
+
+  /**
+   * Scene events brought by the last frame: one per transition, never one per
+   * frame. The first frame only sets the baseline (no "change" from nothing).
+   * @returns {Array<{ key: string, data: object }>} data without the device
+   */
+  detectEvents(now = this.lastFrameAt) {
+    const reading = this.reading();
+    if (!reading) {
+      return [];
+    }
+    const events = [];
+    if (reading.period !== null) {
+      if (this.lastPeriod !== null && reading.period !== this.lastPeriod) {
+        events.push({
+          key: SCENE_TRIGGERS.TARIFF_PERIOD_CHANGED,
+          data: {
+            period: reading.period,
+            period_type: reading.periodType,
+            previous_period: this.lastPeriod,
+          },
+        });
+      }
+      this.lastPeriod = reading.period;
+    }
+    if (reading.overload) {
+      if (this.lastOverloadAt === 0 || now - this.lastOverloadAt > OVERLOAD_END_MS) {
+        events.push({ key: SCENE_TRIGGERS.OVERLOAD_STARTED, data: { power: reading.power } });
+      }
+      this.lastOverloadAt = now;
+    }
+    return events;
+  }
+
+  /** True while an overload seen less than OVERLOAD_END_MS ago lasts. */
+  overloadActive(now) {
+    return this.lastOverloadAt > 0 && now - this.lastOverloadAt <= OVERLOAD_END_MS;
+  }
+
+  /** The feature external_id of a label, or null when the meter does not send it. */
+  featureId(gladys, label) {
+    return this.labels.has(label) ? this.ids(gladys).feature(featureKey(label)) : null;
   }
 
   /**

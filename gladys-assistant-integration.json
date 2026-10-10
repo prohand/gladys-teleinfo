@@ -8,7 +8,7 @@
   },
   "version": "1.0.2",
   "docker_image": "ghcr.io/prohand/gladys-teleinfo:1.0.2",
-  "gladys_version": ">=4.86.0",
+  "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-teleinfo/main/cover.png",
   "categories": ["energy"],
   "transports": ["local"],
@@ -96,6 +96,228 @@
         "fr": "Tester la connexion"
       },
       "timeout_seconds": 30
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "tariff_period_changed",
+      "label": {
+        "en": "Tariff period changed",
+        "fr": "Changement de période tarifaire"
+      },
+      "description": {
+        "en": "The meter switched tariff period (off-peak, peak…).",
+        "fr": "Le compteur a changé de période tarifaire (heures creuses, pleines…)."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Meter",
+            "fr": "Compteur"
+          }
+        },
+        {
+          "key": "period_type",
+          "type": "multi_select",
+          "label": {
+            "en": "New period",
+            "fr": "Nouvelle période"
+          },
+          "options": [
+            {
+              "value": "off_peak",
+              "label": {
+                "en": "Off-peak hours",
+                "fr": "Heures creuses"
+              }
+            },
+            {
+              "value": "peak",
+              "label": {
+                "en": "Peak hours",
+                "fr": "Heures pleines"
+              }
+            },
+            {
+              "value": "base",
+              "label": {
+                "en": "Single rate",
+                "fr": "Base / toutes heures"
+              }
+            },
+            {
+              "value": "other",
+              "label": {
+                "en": "Other",
+                "fr": "Autre"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "period",
+          "type": "string",
+          "label": {
+            "en": "New period (meter label)",
+            "fr": "Nouvelle période (libellé compteur)"
+          }
+        },
+        {
+          "key": "period_type",
+          "type": "string",
+          "label": {
+            "en": "New period type",
+            "fr": "Type de la nouvelle période"
+          }
+        },
+        {
+          "key": "previous_period",
+          "type": "string",
+          "label": {
+            "en": "Previous period",
+            "fr": "Période précédente"
+          }
+        }
+      ]
+    },
+    {
+      "key": "overload_started",
+      "label": {
+        "en": "Subscribed power exceeded",
+        "fr": "Dépassement de puissance souscrite"
+      },
+      "description": {
+        "en": "The power drawn went over the subscription (risk of tripping).",
+        "fr": "La puissance consommée dépasse l'abonnement (risque de disjonction)."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Meter",
+            "fr": "Compteur"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "power",
+          "type": "number",
+          "label": {
+            "en": "Apparent power (VA)",
+            "fr": "Puissance apparente (VA)"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "read_meter",
+      "label": {
+        "en": "Read the meter",
+        "fr": "Lire le compteur"
+      },
+      "description": {
+        "en": "Returns the power, tariff period and index of the meter.",
+        "fr": "Renvoie la puissance, la période tarifaire et l'index du compteur."
+      },
+      "timeout_seconds": 10,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Meter",
+            "fr": "Compteur"
+          },
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "available",
+          "type": "boolean",
+          "label": {
+            "en": "Meter readable",
+            "fr": "Compteur lisible"
+          }
+        },
+        {
+          "key": "power",
+          "type": "number",
+          "label": {
+            "en": "Apparent power (VA)",
+            "fr": "Puissance apparente (VA)"
+          }
+        },
+        {
+          "key": "period",
+          "type": "string",
+          "label": {
+            "en": "Tariff period",
+            "fr": "Période tarifaire"
+          }
+        },
+        {
+          "key": "period_type",
+          "type": "string",
+          "label": {
+            "en": "Tariff period type",
+            "fr": "Type de période tarifaire"
+          }
+        },
+        {
+          "key": "index_kwh",
+          "type": "number",
+          "label": {
+            "en": "Total index (kWh)",
+            "fr": "Index total (kWh)"
+          }
+        },
+        {
+          "key": "overload",
+          "type": "boolean",
+          "label": {
+            "en": "Overload in progress",
+            "fr": "Dépassement en cours"
+          }
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "meter",
+      "label": {
+        "en": "Electricity meter",
+        "fr": "Compteur électrique"
+      },
+      "description": {
+        "en": "Live power, index, 24 h curve, tariff period and overload.",
+        "fr": "Puissance en direct, index, courbe 24 h, période tarifaire et dépassement."
+      },
+      "icon": "zap",
+      "settings": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Meter",
+            "fr": "Compteur"
+          },
+          "required": true
+        }
+      ]
     }
   ]
 }

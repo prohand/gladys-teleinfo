@@ -19,12 +19,29 @@ import { normalizeConfig } from './src/config.js';
 import { TeleinfoHub } from './src/teleinfo/hub.js';
 import { TcpSource } from './src/transport/tcpSource.js';
 import { connectionStatusOf, testConnection } from './src/status.js';
+import { createSceneActions } from './src/scenes.js';
+import { createWidgets } from './src/widgets.js';
 
 const gladys = new GladysIntegration();
 
 let config = normalizeConfig();
-const hub = new TeleinfoHub(gladys, { publishIntervalMs: config.publish_interval * 1000 });
+// Every scene event (tariff change, overload) also changes the widget's
+// computed status rows: nudge it instead of waiting for its TTL.
+const hub = new TeleinfoHub(gladys, {
+  publishIntervalMs: config.publish_interval * 1000,
+  onEvent: () => refreshWidgets(),
+});
 let source = null;
+const WIDGETS = createWidgets(hub);
+const SCENE_ACTIONS = createSceneActions(hub);
+
+// "Re-pull me now": fire-and-forget, rate-limited core-side (1 per 10 s per
+// widget) and dropped while disconnected.
+function refreshWidgets() {
+  for (const key of Object.keys(WIDGETS)) {
+    gladys.requestWidgetRefresh(key);
+  }
+}
 
 // (Re)start the TCP reader with the current config.
 function restartSource() {
@@ -41,7 +58,11 @@ function restartSource() {
     onFrame: (frame) => {
       hub.handleFrame(frame);
     },
-    onStatus: (status, detail) => reportStatus(connectionStatusOf(status, { config, detail })),
+    onStatus: (status, detail) => {
+      reportStatus(connectionStatusOf(status, { config, detail }));
+      // The widget shows whether frames are received.
+      refreshWidgets();
+    },
   });
   source.start();
 }
@@ -91,6 +112,19 @@ gladys.onAction('test_connection', async () => {
   return testConnection(hub);
 });
 
+// --- Scene actions (Gladys >= 5.1.0) -----------------------------------------
+// Registered per key; the handler receives the RESOLVED fields and returns the
+// declared outputs. Scene TRIGGERS need no handler: the hub fires them with
+// publishSceneEvent on each transition (src/teleinfo/meter.js).
+for (const [actionKey, handler] of Object.entries(SCENE_ACTIONS)) {
+  gladys.onSceneAction(actionKey, handler);
+}
+
+// --- Dashboard widgets (Gladys >= 5.1.0) -------------------------------------
+for (const [widgetKey, widget] of Object.entries(WIDGETS)) {
+  gladys.onWidgetGet(widgetKey, (request) => widget.get(gladys, request));
+}
+
 // --- Configuration updated by the user ---------------------------------------
 gladys.onConfigUpdated(async (newConfig) => {
   logger.info('onConfigUpdated -> new configuration received');
@@ -111,6 +145,8 @@ gladys.on('connected', async () => {
       hub.forgetPublished();
     }
     restartSource();
+    // Nudges sent while the socket was down were dropped: re-sync dashboards.
+    refreshWidgets();
   } catch (err) {
     logger.error('Post-connection initialization failed', err);
     await gladys

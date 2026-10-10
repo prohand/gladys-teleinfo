@@ -6,6 +6,21 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Scene trigger **Tariff period changed**, filterable on the new period (off-peak, peak,
+  single rate, other), with the meter label and the previous period as variables.
+- Scene trigger **Subscribed power exceeded** (ADPS in historic mode, apparent power above
+  PREF in standard mode), fired once per overload.
+- Scene action **Read the meter**: power, tariff period, total index and overload as outputs.
+- Dashboard widget **Electricity meter**: live power, total index, 24 h curve, tariff period,
+  overload and frame reception.
+
+### Changed
+
+- Gladys 5.1.0 or later is required (scene and widget declarations).
+- The tariff period text collapses repeated spaces (`HEURE  PLEINE` → `HEURE PLEINE`).
+
 ## [1.0.2] - 2026-10-10
 
 ### Added

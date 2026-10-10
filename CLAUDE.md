@@ -67,6 +67,12 @@ no protocol logic. Everything else lives under `src/`:
 - **`src/teleinfo/meter.js`** — one meter: its device payload, built from the labels it has
   actually sent, and its states from its last frame.
 - **`src/teleinfo/hub.js`** — the meters registry and the throttled publication.
+- **`src/teleinfo/reading.js`** — pure: power, tariff period (+ normalized type), total index
+  and overload of a frame. The scene triggers, the scene action and the widget all read it.
+- **`src/sceneTriggers.js`** — the scene trigger keys; `Meter.detectEvents()` decides when they
+  fire, `TeleinfoHub.fireSceneEvent()` sends them.
+- **`src/scenes.js`** — the `read_meter` scene action (`createSceneActions(hub)`).
+- **`src/widgets.js`** — the `meter` dashboard widget (`createWidgets(hub)`).
 - **`src/status.js`** — the bilingual connection status and the "Test the connection" message.
 - **`src/config.js`** — defaults and normalization.
 
@@ -100,6 +106,22 @@ integration, and every state is a history row. So the hub publishes at most ever
 every 10 minutes (heartbeat) and right after `onDeviceCreated` / a scan (`forgetPublished()`).
 Frames arriving while a request is in flight are recorded, the next frame publishes them.
 
+### Scenes and widgets (Gladys >= 5.1.0)
+
+- Every trigger, action and widget picks the meter through a `device` field
+  (`"source": "devices"`). The core compares a trigger field with the event value of the
+  **same key**, so the hub always puts the device external_id under `device`.
+- One event per transition, never per frame (300 events/min cap): the first frame only sets the
+  baseline; an overload ends after `OVERLOAD_END_MS` (60 s) without one, so a flickering ADPS
+  fires once.
+- `period_type` (`off_peak` / `peak` / `base` / `other`) is what a scene filters on: the raw
+  label differs between meters and suppliers. The raw label stays available as `period`.
+- `read_meter` never throws for a silent meter: it answers `available: false` (a scene action
+  is never a condition). A reading older than `STALE_MS` (60 s) is not "the meter now".
+- The widget's power tile and chart are bound to device features (live). Its status rows are
+  computed and cached by the core: `index.js` nudges it (`requestWidgetRefresh`) on every scene
+  event, reader status change and (re)connection.
+
 ## Gladys core constraints that are not obvious
 
 The core sources are worth cloning when in doubt (`GladysAssistant/Gladys`, public, read-only
@@ -129,7 +151,9 @@ The traps, each pinned by a test in `test/manifest.test.js`:
 - **`categories` costs a `gladys_version` floor of `>=4.86.0`**; ours is `["energy"]`;
 - `transports` is `["local"]` (LAN only): a single channel, so no "Prefer the local
   connection" toggle and no per-device `publishTransports` badge;
-- `widgets`, `scene_triggers`, `scene_actions` would cost a floor of `>=5.1.0`: none declared yet;
+- `widgets`, `scene_triggers`, `scene_actions` cost a floor of **`>=5.1.0`** (ours); a widget
+  label is 3-30 characters, its description ≤ 100; a trigger field cannot be `boolean`;
+- the trigger keys equal `SCENE_TRIGGERS`, the action and widget keys equal the factories' keys;
 - every manifest `actions` key has a `gladys.onAction(...)` in `index.js`, and vice versa;
 - the `config_schema` defaults equal `DEFAULT_CONFIG`.
 

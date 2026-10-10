@@ -8,6 +8,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DEFAULT_CONFIG } from '../src/config.js';
+import { SCENE_TRIGGERS } from '../src/sceneTriggers.js';
+import { createSceneActions } from '../src/scenes.js';
+import { createWidgets } from '../src/widgets.js';
 
 const manifest = JSON.parse(
   await readFile(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
@@ -18,8 +21,18 @@ const indexSource = await readFile(new URL('../index.js', import.meta.url), 'utf
 // Every list of form fields the manifest can declare (same field grammar).
 const allFields = [
   ...(manifest.config_schema ?? []),
-  ...(manifest.actions ?? []).flatMap((item) => item.fields ?? []),
+  ...[
+    ...(manifest.actions ?? []),
+    ...(manifest.scene_triggers ?? []),
+    ...(manifest.scene_actions ?? []),
+  ].flatMap((item) => item.fields ?? []),
+  ...(manifest.widgets ?? []).flatMap((widget) => widget.settings ?? []),
 ];
+
+// The handler factories only keep the hub: a stub is enough to list the keys.
+const SCENE_ACTION_KEYS = Object.keys(createSceneActions({}));
+const WIDGET_KEYS = Object.keys(createWidgets({}));
+const keysOf = (list) => (list ?? []).map((entry) => entry.key);
 
 // Manifest fields older Gladys releases reject as unknown, with the first
 // release accepting them. The store validator refuses a manifest whose
@@ -60,13 +73,53 @@ test('declaring catalog categories requires Gladys >= 4.86.0', () => {
   );
 });
 
-test('scene triggers, scene actions or widgets would require Gladys >= 5.1.0', () => {
+test('scene triggers, scene actions and widgets require Gladys >= 5.1.0', () => {
   const declared = CAPABILITY_FIELDS.filter((field) => manifest[field] !== undefined);
-  if (declared.length > 0) {
-    assert.ok(
-      isAtLeast(minGladysVersion(), CAPABILITY_MIN_GLADYS_VERSION),
-      `${declared.join(', ')} requires gladys_version >= 5.1.0, got "${manifest.gladys_version}"`,
-    );
+  assert.deepEqual(declared, CAPABILITY_FIELDS);
+  assert.ok(
+    isAtLeast(minGladysVersion(), CAPABILITY_MIN_GLADYS_VERSION),
+    `${declared.join(', ')} requires gladys_version >= 5.1.0, got "${manifest.gladys_version}"`,
+  );
+});
+
+test('every scene trigger the code fires is declared, and vice versa', () => {
+  // An undeclared key is a 404 on publishSceneEvent; a declared key nobody
+  // fires is a dead card in the scene editor.
+  assert.deepEqual(keysOf(manifest.scene_triggers).sort(), Object.values(SCENE_TRIGGERS).sort());
+});
+
+test('every scene trigger filters on the device the events carry', () => {
+  // The core compares each field with the event value of the SAME key: the
+  // hub puts the device external_id under `device`.
+  for (const trigger of manifest.scene_triggers) {
+    const device = trigger.fields.find((f) => f.key === 'device');
+    assert.equal(device?.source, 'devices', `${trigger.key}: device filter`);
+  }
+});
+
+test('every scene_actions key has a handler, and vice versa', () => {
+  assert.deepEqual(keysOf(manifest.scene_actions).sort(), SCENE_ACTION_KEYS.sort());
+});
+
+test('every widgets key has a content handler, and vice versa', () => {
+  assert.deepEqual(keysOf(manifest.widgets).sort(), WIDGET_KEYS.sort());
+});
+
+test('widget labels hold 3 to 30 characters, descriptions at most 100', () => {
+  for (const widget of manifest.widgets) {
+    for (const text of Object.values(widget.label)) {
+      assert.ok(text.length >= 3 && text.length <= 30, `${widget.key}: label "${text}"`);
+    }
+    for (const text of Object.values(widget.description ?? {})) {
+      assert.ok(text.length <= 100, `${widget.key}: description too long`);
+    }
+  }
+});
+
+test('dynamic selects declare a source and no static options', () => {
+  for (const field of allFields.filter((f) => f.source !== undefined)) {
+    assert.equal(field.source, 'devices');
+    assert.equal(field.options, undefined, `field "${field.key}": source and options together`);
   }
 });
 
