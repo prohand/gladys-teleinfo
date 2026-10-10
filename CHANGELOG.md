@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-10
+
 ### Added
 
 - The manifest declares the `local` transport: Gladys shows the integration as local (the
@@ -28,5 +30,6 @@ All notable changes to this integration are documented here. The format follows
   store admission checks; Dependabot keeps the npm dependencies, the GitHub Actions and the
   Docker base image up to date.
 
-[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/prohand/gladys-teleinfo/releases/tag/v1.0.1
