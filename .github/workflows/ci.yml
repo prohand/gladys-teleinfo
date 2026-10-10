@@ -7,14 +7,11 @@
 #   2. ESLint    -> catch real mistakes (undefined vars, dead code, ...);
 #   3. Tests     -> `node --test`, the built-in runner (no extra dependency).
 #
-# They run on Node 22 (the oldest version `engines` accepts) and Node 24 (the
-# one the Docker image ships with, see the Dockerfile). The image is built too
-# (amd64 only, never pushed), so a broken Dockerfile shows up here rather than
-# in a release.
-#
-# The store validator (`npx github:GladysAssistant/integration-store .`) is not
-# a gate here: it also checks that the manifest's `docker_image` exists on its
-# registry, which is false until the first release.
+# Runs on Node 22, the oldest version `engines` accepts, and on Node 24, the
+# version the Docker image ships with (see the Dockerfile), so the check
+# exercises both the floor and the exact runtime the integration runs on.
+# Pull requests also build the Docker image (without pushing it): a broken
+# Dockerfile or lock file is caught before the release, not by build.yml.
 # -----------------------------------------------------------------------------
 name: CI
 
@@ -24,29 +21,22 @@ on:
       - main
   pull_request:
 
-# Checks only read the code: no write scope for the token, whatever the
-# repository default is.
-permissions:
-  contents: read
-
 jobs:
   quality:
     runs-on: ubuntu-latest
-    name: Lint & test (Node ${{ matrix.node-version }})
+    name: Lint & test (Node ${{ matrix.node }})
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22, 24]
+        node: [22, 24]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false # no git push here
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ matrix.node }}
           cache: npm
 
       - name: Install dependencies
@@ -62,22 +52,39 @@ jobs:
         run: npm test
 
   docker:
+    # The image build.yml publishes, built here without pushing it.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    name: Docker build
+    name: Docker image build
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false # no git push here
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
-      # Same build as build.yml, without pushing, and for amd64 only: emulating
-      # arm64 is slow, and only the release build needs it.
-      - name: Build (no push)
-        uses: docker/build-push-action@v6
+      - name: Build the image (no push)
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
           push: false
+
+  store:
+    # The store indexer's own admission checks (manifest schema, version
+    # couplings, cover, image). Pull requests only: a release commit reaches main
+    # before build.yml has pushed its image, and the check refuses a missing one.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    name: Store admission checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Validate like the store indexer
+        run: npx --yes github:GladysAssistant/integration-store .

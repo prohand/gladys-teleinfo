@@ -43,6 +43,9 @@ test('a historic meter becomes a device with the labels it sends', () => {
   assert.equal(papp.type, DEVICE_FEATURE_TYPES.ENERGY_SENSOR.POWER);
   for (const feature of device.features) {
     assert.equal(feature.read_only, true);
+    // NOT NULL in the core: the "add device" click fails without them.
+    assert.equal(typeof feature.min, 'number', `${feature.external_id}: min`);
+    assert.equal(typeof feature.max, 'number', `${feature.external_id}: max`);
   }
   const ptec = device.features.find((f) => f.external_id.endsWith(':ptec'));
   assert.equal(ptec.keep_history, false);
@@ -125,6 +128,8 @@ test('every label definition is a valid Gladys feature', () => {
       );
       assert.equal(typeof def.convert, 'function', `${where}: missing converter`);
       assert.ok(def.name.length > 0, `${where}: missing name`);
+      assert.equal(typeof def.min, 'number', `${where}: missing min`);
+      assert.equal(typeof def.max, 'number', `${where}: missing max`);
     }
   }
 });

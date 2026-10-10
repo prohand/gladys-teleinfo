@@ -49,11 +49,15 @@ function measure(name, category, type, unit, max) {
   return { name, category, type, unit, min: 0, max, convert: toInteger };
 }
 
+// The core stores min/max as NOT NULL with no default: a feature without them
+// is published fine, then the user's "add device" click fails. Text included.
 function text(name) {
   return {
     name,
     category: CATEGORIES.TEXT,
     type: TYPES.TEXT.TEXT,
+    min: 0,
+    max: 0,
     convert: toText,
     text: true,
   };

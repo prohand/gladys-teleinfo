@@ -1,82 +1,158 @@
 # CLAUDE.md
 
-Project rules for coding assistants (Claude Code reads this file) and for human
-contributors.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this is
 
-A Gladys Assistant **external integration**: a Node.js service (Node 22+, ESM,
-no build step) that runs in its own sandboxed Docker container and talks to
-Gladys through
-[`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js),
-its only runtime dependency. It started from the official JavaScript template and reads the Enedis TIC
-(Linky or electronic meter) through the LiXee TIC DIN-rail module.
+An **external integration for Gladys Assistant**, built on the official
+[JavaScript template](https://github.com/GladysAssistant/integration-template-js) and
+`@gladysassistant/integration-sdk`. It runs as its own Docker container, talks to Gladys over a
+WebSocket the SDK manages, and exposes the Enedis **TIC** (télé-information client) of a Linky or
+electronic meter as a device. First supported hardware: the LiXee TIC DIN-rail module (USB).
+
+It is **not** part of the Gladys core: it can only publish devices/states and read its own
+configuration. Anything the core UI does with that data is outside this repo's control.
 
 ## Commands
 
 ```bash
-npm install
-npm test                                  # node --test, the built-in runner
-node --test test/frame.test.js            # one file
-node --test --test-name-pattern "historic" # tests whose name matches
-npm run lint                              # ESLint
-npm run format:check                      # Prettier, as the CI runs it
-npm run format                            # Prettier, fix in place
-npx github:GladysAssistant/integration-store .   # store admission checks
+npm test                 # node --test (built-in runner, no framework)
+node --test test/frame.test.js                # a single file
+node --test --test-name-pattern "historic"    # tests by name
+npm run lint             # ESLint
+npm run format           # Prettier, write
+npm run format:check     # Prettier, check — the CI gate
 ```
 
-The CI (`.github/workflows/ci.yml`) runs `format:check`, `lint` and `test` on
-Node 22 and 24, and builds the Docker image: run the three commands before
-pushing.
+All three gates run on every push and PR (`.github/workflows/ci.yml`), on Node 22 and 24. Pull
+requests also build the Docker image and run the store admission checks. Tests never open a
+socket: `TcpSource` takes an injected `createConnection`, and frames are built by
+`test/helpers/frames.js`.
+
+Before tagging a release, check the manifest against the real store rules:
+
+```bash
+npx github:GladysAssistant/integration-store .
+```
+
+Two findings are expected before a release exists: the `docker_image` tag is not on ghcr.io yet,
+and `cover_image` 404s until the branch is pushed. For the same reason the CI `store` job fails on
+pull requests until the first release is published.
+
+Run locally against a real Gladys:
+
+```bash
+GLADYS_HOST_API_URL="http://localhost:1443" GLADYS_INTEGRATION_TOKEN="<token>" \
+GLADYS_INTEGRATION_SELECTOR="teleinfo" LOG_LEVEL=debug npm start
+```
+
+No meter at hand: replay a raw capture (`nc <bridge> 2000 > capture.bin`) with
+`socat TCP-LISTEN:2000,reuseaddr,fork FILE:capture.bin` and point the config at it.
 
 ## Architecture
 
-```
-index.js                          SDK wiring only: handlers registered before connect()
-src/transport/tcpSource.js        TCP client to the ser2net bridge: reconnection, data watchdog
-src/teleinfo/frame.js             TIC stream decoder (STX/ETX frames, groups, checksums, 7E1)
-src/teleinfo/labels.js            TIC label -> Gladys feature (category, type, unit, converter)
-src/teleinfo/meter.js             one meter: device payload + states from its last frame
-src/teleinfo/hub.js               meters registry, throttled publication to Gladys
-src/status.js                     bilingual connection status + "Test the connection" message
-src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test; test/helpers/ holds a fake SDK and frame builders
-.github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
-```
+`index.js` is pure wiring — SDK handlers, config lifecycle, the TCP reader's lifecycle — and holds
+no protocol logic. Everything else lives under `src/`:
 
-Why TCP: the integration container cannot open a USB port (the manifest only
-grants `coral-usb`, `coral-pcie`, `gpu` and `video` hardware classes), so the
-LiXee module is shared on the network by ser2net and read over raw TCP.
+- **`src/transport/tcpSource.js`** — the TCP client to the serial bridge: reconnection with a
+  5 s → 60 s backoff, and a 30 s watchdog that reports "connected but no valid frame" (wrong
+  speed, wrong port, meter not wired). It only moves bytes; the serial settings are ser2net's.
+- **`src/teleinfo/frame.js`** — the pure TIC decoder: STX/ETX frames, LF/CR groups, checksums,
+  7E1 parity bit stripped (`& 0x7F`). Historic vs standard mode is told by the separator (space
+  vs tab), never configured.
+- **`src/teleinfo/labels.js`** — TIC label → Gladys feature (name, category, type, unit, min,
+  max, converter). The categories, types and units copy the core's ZLinky_TIC mapping
+  (`server/services/zigbee2mqtt/exposes/numericType.js`), so a meter looks the same whether it is
+  read here or over Zigbee.
+- **`src/teleinfo/meter.js`** — one meter: its device payload, built from the labels it has
+  actually sent, and its states from its last frame.
+- **`src/teleinfo/hub.js`** — the meters registry and the throttled publication.
+- **`src/status.js`** — the bilingual connection status and the "Test the connection" message.
+- **`src/config.js`** — defaults and normalization.
 
-## Rules
+### Why TCP and not the USB port
 
-- **External ids are forever.** Build them with
-  `gladys.externalIds(type, platformId)`, `platformId` being the meter serial
-  number (ADCO / ADSC), never a label. Feature keys are the lower-cased TIC
-  labels (`src/teleinfo/labels.js`): never rename one. Gladys keys
-  devices, their history, scenes and dashboards on them: changing one creates a
-  new device and orphans the old one. The same goes for every key users store:
-  manifest `config_schema`, `actions`, widget and scene keys, feature keys.
-- **The container rootfs is read-only.** Write only under `/data`, the one
-  writable volume. Never log tokens, passwords or API keys.
-- **Versions belong to the Release workflow** (Actions → Release). Never edit
-  `version` in `package.json` or in the manifest, nor the `docker_image` tag,
-  by hand — except on the README's hand-pushed tag path, which bumps all three
-  together before tagging. `test/manifest.test.js` checks they agree.
-- **Changelog.** Every user-visible change adds a line under `## [Unreleased]`
-  in `CHANGELOG.md` (`### Added`, `Changed`, `Fixed`, `Removed`, `Security`).
-  Never write a version heading: the Release workflow moves the section, and it
-  becomes the notes of the GitHub Release.
-- **Manifest.** Texts are multi-language objects `{ "en": ..., "fr": ... }`:
-  `label`, `description` and `placeholder` alike, never a plain string. The
-  catalog `description` holds 10 to 100 characters per language. A field the
-  older cores do not know needs a higher `gladys_version` minimum
-  (`categories`: 4.86.0; `widgets`, `scene_triggers`, `scene_actions`,
-  `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
-  code (defaults, action handlers): change both sides together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
-- **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
-  in English. Tests never touch the network.
+The integration container cannot open a serial port: the manifest only grants the `coral-usb`,
+`coral-pcie`, `gpu` and `video` hardware classes (store `schemas/manifest.schema.json`), and only
+to sub-containers. The LiXee module is therefore shared on the network by **ser2net** (raw TCP,
+`1200e71` or `9600e71`) and read here as a byte stream. ser2net accepts one client at a time:
+`kickolduser` in the documented config lets the integration take the port back from a forgotten
+`nc`.
+
+### The device follows the meter, not the configuration
+
+- The device `external_id` is `gladys.externalIds('meter', <ADCO|ADSC>)`: the serial number the
+  meter sends in every frame. The feature key is the lower-cased TIC label (`smaxsn-1`…).
+  **Both are forever**: Gladys keys the device history, dashboards and scenes on them.
+- Features are created only for the labels the meter sends (single vs three phase, Base vs HC vs
+  Tempo…). A new label re-publishes the device; a mode switch (historic ↔ standard) keeps the
+  same serial number, hence the same device, with other features.
+- `ADPS` (historic overload warning) is only sent while the overload lasts: it is declared from
+  the first frame (`always`) and published as `0` when absent (`absent`).
+- Labels without a Gladys feature type (`DATE`, `STGE`, `NGTF`, `OPTARIF`, `HHPHC`, `MOTDETAT`…)
+  are decoded and ignored.
+
+### Publication pace
+
+A meter sends a frame every 1 to 2 s; `POST /state` is rate-limited to 300 states per minute per
+integration, and every state is a history row. So the hub publishes at most every
+`publish_interval` seconds (15–3600, default 60), only the values that changed, plus every value
+every 10 minutes (heartbeat) and right after `onDeviceCreated` / a scan (`forgetPublished()`).
+Frames arriving while a request is in flight are recorded, the next frame publishes them.
+
+## Gladys core constraints that are not obvious
+
+The core sources are worth cloning when in doubt (`GladysAssistant/Gladys`, public, read-only
+clone is enough).
+
+- **Every feature needs an explicit numeric `min` and `max`**, text features included —
+  `t_device_feature.min/max` are `NOT NULL` with no default. Publishing passes, then the user's
+  "add device" click fails. `test/meter.test.js` pins it for every label.
+- **The core silently drops states for a feature that does not exist yet**
+  (`externalIntegration.saveStates.js`). States published before the user adds the device go
+  nowhere, hence `onDeviceCreated` → `forgetPublished()`.
+- **`poll_frequency` is an enum in milliseconds capped at one minute.** The TIC is pushed by the
+  meter, so no device declares polling at all.
+- **A `number` config field is locale-dependent** (`<input type="number">`): fine for the port
+  and the interval, which are integers; a decimal the user types belongs in a `string` field.
+- **Energy indexes are sent in Wh and stored in kWh** (`/ 1000`), like the core ZLinky mapping.
+- **Text states go through `{ text }`**, not `{ state }` (SDK `publishState` / `publishStates`).
+
+## Manifest gotchas
+
+`gladys-assistant-integration.json` is validated by the store schema, not by anything in this repo.
+The traps, each pinned by a test in `test/manifest.test.js`:
+
+- the free-text field type is **`string`**, not `text`;
+- `label`, `description` and `placeholder` are multi-language **objects**, never bare strings;
+- the catalog `description.en` / `.fr` hold **10 to 100 characters**;
+- **`categories` costs a `gladys_version` floor of `>=4.86.0`**; ours is `["energy"]`;
+- `widgets`, `scene_triggers`, `scene_actions` would cost a floor of `>=5.1.0`: none declared yet;
+- every manifest `actions` key has a `gladys.onAction(...)` in `index.js`, and vice versa;
+- the `config_schema` defaults equal `DEFAULT_CONFIG`.
+
+## Releasing
+
+**Actions → Release → Run workflow** (`patch`/`minor`/`major`). It bumps `package.json` and the
+manifest `version` + `docker_image` tag together, reformats both with Prettier, moves the
+`## [Unreleased]` section of `CHANGELOG.md` under the version
+(`.github/scripts/changelog-release.mjs`), commits, tags `vX.Y.Z`, calls `build.yml` for the
+multi-arch image and `github-release.yml` for the GitHub Release (notes = the version's changelog
+section). Never edit the versions by hand.
+
+Every user-visible change adds a line under `## [Unreleased]` (`### Added`, `Changed`, `Fixed`,
+`Removed`, `Security`). Never write a version heading yourself.
+
+Config-schema and feature changes only reach users through a release. A feature-set change also
+requires the user to update the already-created device from the Discovery screen.
+
+## Conventions
+
+Comments explain **why**, not what — particularly the core constraints above, which look arbitrary
+without their reason. Keep the protocol pure (`frame.js`, `labels.js`, `meter.js` never touch the
+network) so it stays testable offline. Feature names are French, like the TIC and the core
+mapping; every user-facing message (status, action answer, manifest texts, docs) is an `en`/`fr`
+pair, and `docs/en.md` / `docs/fr.md` stay in sync.
+
+The container rootfs is read-only: write only under `/data`. The meter serial number and the
+bridge address may appear in logs (they are needed to diagnose); the raw frames never do.

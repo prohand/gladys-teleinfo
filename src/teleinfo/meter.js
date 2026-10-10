@@ -77,16 +77,14 @@ export class Meter {
           external_id: ids.feature(featureKey(label)),
           category: def.category,
           type: def.type,
+          min: def.min,
+          max: def.max,
           read_only: true,
           has_feedback: false,
           keep_history: !def.text,
         };
         if (def.unit !== undefined) {
           feature.unit = def.unit;
-        }
-        if (def.min !== undefined) {
-          feature.min = def.min;
-          feature.max = def.max;
         }
         return feature;
       }),

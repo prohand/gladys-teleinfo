@@ -63,6 +63,15 @@ gladys.onScanRequest(async () => {
   hub.forgetPublished();
 });
 
+// --- Device created from the Discovery screen --------------------------------
+// The core silently drops the states of a feature that does not exist yet, and
+// only changed values are re-sent: without this, the new device would wait up
+// to the 10-minute heartbeat for its first values.
+gladys.onDeviceCreated(async (device) => {
+  logger.info(`onDeviceCreated -> ${device.external_id}, re-sending every value`);
+  hub.forgetPublished();
+});
+
 // --- No command: every TIC value is read-only --------------------------------
 gladys.onSetValue(async (device) => {
   throw new Error(`${device.external_id} is read-only`);
