@@ -1,6 +1,6 @@
 {
   "name": "gladys-teleinfo",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "private": true,
   "description": "Gladys Assistant integration reading the Enedis TIC (Linky or electronic meter) through the LiXee TIC module.",
   "type": "module",
