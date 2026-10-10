@@ -127,6 +127,8 @@ The traps, each pinned by a test in `test/manifest.test.js`:
 - `label`, `description` and `placeholder` are multi-language **objects**, never bare strings;
 - the catalog `description.en` / `.fr` hold **10 to 100 characters**;
 - **`categories` costs a `gladys_version` floor of `>=4.86.0`**; ours is `["energy"]`;
+- `transports` is `["local"]` (LAN only): a single channel, so no "Prefer the local
+  connection" toggle and no per-device `publishTransports` badge;
 - `widgets`, `scene_triggers`, `scene_actions` would cost a floor of `>=5.1.0`: none declared yet;
 - every manifest `actions` key has a `gladys.onAction(...)` in `index.js`, and vice versa;
 - the `config_schema` defaults equal `DEFAULT_CONFIG`.

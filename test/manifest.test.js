@@ -70,6 +70,12 @@ test('scene triggers, scene actions or widgets would require Gladys >= 5.1.0', (
   }
 });
 
+test('the manifest declares the local transport only', () => {
+  // The meter is read over the LAN (ser2net), never through a cloud: Gladys
+  // shows the "local" tag and no "Prefer the local connection" toggle.
+  assert.deepEqual(manifest.transports, ['local']);
+});
+
 test('config_schema defaults stay consistent with DEFAULT_CONFIG', () => {
   const keys = manifest.config_schema.filter((f) => f.type !== 'section').map((f) => f.key);
   assert.deepEqual(keys.sort(), Object.keys(DEFAULT_CONFIG).sort());

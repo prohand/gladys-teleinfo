@@ -6,6 +6,11 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The manifest declares the `local` transport: Gladys shows the integration as local (the
+  meter is read over the LAN, no cloud).
+
 ## [1.0.1] - 2026-10-10
 
 ### Added

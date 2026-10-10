@@ -11,6 +11,7 @@
   "gladys_version": ">=4.86.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-teleinfo/main/cover.png",
   "categories": ["energy"],
+  "transports": ["local"],
   "config_schema": [
     {
       "key": "intro",
