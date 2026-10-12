@@ -103,7 +103,12 @@ to sub-containers. The LiXee module is therefore shared on the network by **ser2
 A meter sends a frame every 1 to 2 s; `POST /state` is rate-limited to 300 states per minute per
 integration, and every state is a history row. So the hub publishes at most every
 `publish_interval` seconds (15–3600, default 60), only the values that changed, plus every value
-every 10 minutes (heartbeat) and right after `onDeviceCreated` / a scan (`forgetPublished()`).
+every 10 minutes (heartbeat) and right after `onDeviceCreated` / a scan / a reconnection
+(`forgetPublished()`). The "only what changed + heartbeat" part is the SDK's
+`gladys.publishChangedStates(states, { heartbeat: HEARTBEAT_MS })` (0.15); the throttle stays in
+the hub, and `forgetPublished()` calls `gladys.forgetPublishedStates()` AND lifts the throttle.
+The SDK forgets a device's values on device created / updated / deleted by itself, never on a
+reconnection. `test/helpers/fakeGladys.js` mirrors both methods on the test clock (`now`).
 Frames arriving while a request is in flight are recorded, the next frame publishes them.
 
 ### Scenes and widgets (Gladys >= 5.1.0)
