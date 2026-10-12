@@ -8,6 +8,9 @@
 //     only the values that changed since the last publication;
 //   - every value is re-sent at least every HEARTBEAT_MS, so a device created
 //     after its values were first sent still gets them.
+// The last two are the SDK's `publishChangedStates` (0.15): it remembers what
+// Gladys ACCEPTED per feature, splits the batches and forgets a device's values
+// when Gladys reports it created, updated or deleted. The throttle is ours.
 // -----------------------------------------------------------------------------
 
 import { createLogger } from '@gladysassistant/integration-sdk';
@@ -16,7 +19,6 @@ import { Meter, meterIdOf } from './meter.js';
 const logger = createLogger({ name: 'teleinfo' });
 
 export const HEARTBEAT_MS = 10 * 60 * 1000;
-const MAX_STATES_PER_REQUEST = 100;
 
 export class TeleinfoHub {
   /**
@@ -32,9 +34,7 @@ export class TeleinfoHub {
     this.publishIntervalMs = publishIntervalMs;
     this.now = now;
     this.meters = new Map();
-    this.published = new Map(); // feature external_id -> last published value
     this.lastPublishAt = 0;
-    this.lastHeartbeatAt = 0;
     this.busy = false;
     this.devicesDirty = false;
     this.waiters = new Set();
@@ -78,9 +78,13 @@ export class TeleinfoHub {
     return null;
   }
 
-  /** Re-send every value at the next publication (e.g. after a scan). */
+  /**
+   * Re-send every value at the next frame (e.g. after a scan): the SDK's
+   * memory of the accepted values is dropped, and the throttle too, so the
+   * values do not wait up to `publish_interval` more.
+   */
   forgetPublished() {
-    this.published.clear();
+    this.gladys.forgetPublishedStates();
     this.lastPublishAt = 0;
   }
 
@@ -163,25 +167,11 @@ export class TeleinfoHub {
   }
 
   async publishStates(now = this.now()) {
-    const heartbeat = now - this.lastHeartbeatAt >= HEARTBEAT_MS;
-    const states = [...this.meters.values()]
-      .flatMap((meter) => meter.buildStates(this.gladys))
-      .filter((state) => {
-        const value = state.text ?? state.state;
-        return heartbeat || this.published.get(state.device_feature_external_id) !== value;
-      });
+    const states = [...this.meters.values()].flatMap((meter) => meter.buildStates(this.gladys));
     this.lastPublishAt = now;
-    if (heartbeat) {
-      this.lastHeartbeatAt = now;
-    }
-    for (let start = 0; start < states.length; start += MAX_STATES_PER_REQUEST) {
-      const batch = states.slice(start, start + MAX_STATES_PER_REQUEST);
-      await this.gladys.publishStates(batch);
-      // Remembered only once Gladys took them: a failed batch is re-sent.
-      for (const state of batch) {
-        this.published.set(state.device_feature_external_id, state.text ?? state.state);
-      }
-    }
-    logger.debug(`${states.length} state(s) published`);
+    // Only what changed, or was not re-sent for HEARTBEAT_MS. A refused batch
+    // is not remembered as sent: the next publication re-sends it.
+    const { count } = await this.gladys.publishChangedStates(states, { heartbeat: HEARTBEAT_MS });
+    logger.debug(`${count} state(s) published`);
   }
 }

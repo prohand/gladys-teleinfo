@@ -86,8 +86,9 @@ gladys.onScanRequest(async () => {
 
 // --- Device created from the Discovery screen --------------------------------
 // The core silently drops the states of a feature that does not exist yet, and
-// only changed values are re-sent: without this, the new device would wait up
-// to the 10-minute heartbeat for its first values.
+// only changed values are re-sent. The SDK already forgets that device's values
+// before this handler runs; forgetPublished() also lifts the `publish_interval`
+// throttle, so the new device gets them from the next frame.
 gladys.onDeviceCreated(async (device) => {
   logger.info(`onDeviceCreated -> ${device.external_id}, re-sending every value`);
   hub.forgetPublished();

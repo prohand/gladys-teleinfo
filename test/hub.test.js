@@ -14,8 +14,8 @@ function decode(bytes) {
 }
 
 function setup() {
-  const gladys = createFakeGladys();
   let now = 1_000_000;
+  const gladys = createFakeGladys({ now: () => now });
   const hub = new TeleinfoHub(gladys, { publishIntervalMs: 60_000, now: () => now });
   return { gladys, hub, advance: (ms) => (now += ms) };
 }
@@ -97,4 +97,16 @@ test('waitForFrame resolves with the meter, or null after the timeout', async ()
   await hub.handleFrame(decode(historicFrame(HISTORIC_HC)));
   assert.equal((await waiting).id, '021528603314');
   assert.equal(await hub.waitForFrame(10), null);
+});
+
+test('a value changed between two heartbeats is sent alone, the rest waits', async () => {
+  const { gladys, hub, advance } = setup();
+  await hub.handleFrame(decode(historicFrame(HISTORIC_HC)));
+  advance(HEARTBEAT_MS / 2);
+  await hub.handleFrame(decode(historicFrame({ ...HISTORIC_HC, PAPP: '00500' })));
+  assert.equal(gladys.stateCalls[1].length, 1);
+  advance(HEARTBEAT_MS / 2);
+  await hub.handleFrame(decode(historicFrame({ ...HISTORIC_HC, PAPP: '00500' })));
+  // The seven values unchanged since the first frame are due; PAPP is not.
+  assert.equal(gladys.stateCalls[2].length, 7);
 });
