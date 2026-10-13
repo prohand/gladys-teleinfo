@@ -1,14 +1,21 @@
 // -----------------------------------------------------------------------------
 // User-facing messages: the connection status shown in the Configuration
-// screen, and the answer of the "Test the connection" action. Bilingual, like
-// every text the user reads.
+// screen, and the answer of the "Test the connection" action. In English,
+// French, German and Spanish, like every text the user reads.
 // -----------------------------------------------------------------------------
 
 import { STATUS } from './transport/tcpSource.js';
 
-const MODE_LABEL = {
-  historic: { en: 'historic', fr: 'historique' },
-  standard: { en: 'standard', fr: 'standard' },
+// The whole "<mode> mode" phrase: the word order and the agreement differ
+// between the languages.
+const MODE_PHRASE = {
+  historic: {
+    en: 'historic mode',
+    fr: 'mode historique',
+    de: 'historischer Modus',
+    es: 'modo histórico',
+  },
+  standard: { en: 'standard mode', fr: 'mode standard', de: 'Standardmodus', es: 'modo estándar' },
 };
 
 const TEST_TIMEOUT_MS = 15_000;
@@ -16,7 +23,7 @@ const TEST_TIMEOUT_MS = 15_000;
 /**
  * Connection status for a reader status.
  * @param {string} status a STATUS value, or 'not_configured'
- * @returns {{ connected: boolean, message?: { en: string, fr: string } } | null}
+ * @returns {{ connected: boolean, message?: { en: string, fr: string, de: string, es: string } } | null}
  *   null when nothing needs to be reported (transient state).
  */
 export function connectionStatusOf(status, { config, detail } = {}) {
@@ -28,6 +35,8 @@ export function connectionStatusOf(status, { config, detail } = {}) {
         message: {
           en: 'Enter the address of the ser2net bridge in the configuration.',
           fr: "Indiquez l'adresse de la passerelle ser2net dans la configuration.",
+          de: 'Trage die Adresse der ser2net-Bridge in der Konfiguration ein.',
+          es: 'Introduzca la dirección de la pasarela ser2net en la configuración.',
         },
       };
     case STATUS.CONNECTED:
@@ -38,6 +47,8 @@ export function connectionStatusOf(status, { config, detail } = {}) {
         message: {
           en: `Connected to ${address}, but no valid TIC frame: check the ser2net speed (1200 or 9600 bauds, 7E1) and the meter wiring.`,
           fr: `Connecté à ${address}, mais aucune trame TIC valide : vérifiez la vitesse ser2net (1200 ou 9600 bauds, 7E1) et le câblage du compteur.`,
+          de: `Verbunden mit ${address}, aber kein gültiger TIC-Frame: Prüfe die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
+          es: `Conectado a ${address}, pero sin ninguna trama TIC válida: compruebe la velocidad de ser2net (1200 o 9600 baudios, 7E1) y el cableado del contador.`,
         },
       };
     case STATUS.ERROR:
@@ -46,6 +57,8 @@ export function connectionStatusOf(status, { config, detail } = {}) {
         message: {
           en: `Cannot reach ${address} (${detail ?? 'error'}), retrying.`,
           fr: `Impossible de joindre ${address} (${detail ?? 'erreur'}), nouvel essai en cours.`,
+          de: `Keine Verbindung zu ${address} (${detail ?? 'Fehler'}), neuer Versuch läuft.`,
+          es: `No se puede conectar con ${address} (${detail ?? 'error'}), reintentando.`,
         },
       };
     default:
@@ -63,12 +76,17 @@ export async function testConnection(hub, timeoutMs = TEST_TIMEOUT_MS) {
     return {
       en: `No TIC frame received in ${timeoutMs / 1000} s. Check the bridge address, the ser2net speed (1200 or 9600 bauds, 7E1) and the meter wiring.`,
       fr: `Aucune trame TIC reçue en ${timeoutMs / 1000} s. Vérifiez l'adresse de la passerelle, la vitesse ser2net (1200 ou 9600 bauds, 7E1) et le câblage du compteur.`,
+      de: `Kein TIC-Frame in ${timeoutMs / 1000} s empfangen. Prüfe die Adresse der Bridge, die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
+      es: `No se ha recibido ninguna trama TIC en ${timeoutMs / 1000} s. Compruebe la dirección de la pasarela, la velocidad de ser2net (1200 o 9600 baudios, 7E1) y el cableado del contador.`,
     };
   }
   const { id, mode, power } = meter.summary();
   const powerText = power === null ? '' : `, ${power} VA`;
+  const phrase = MODE_PHRASE[mode];
   return {
-    en: `Meter ${id} found (${MODE_LABEL[mode].en} mode${powerText}).`,
-    fr: `Compteur ${id} trouvé (mode ${MODE_LABEL[mode].fr}${powerText}).`,
+    en: `Meter ${id} found (${phrase.en}${powerText}).`,
+    fr: `Compteur ${id} trouvé (${phrase.fr}${powerText}).`,
+    de: `Zähler ${id} gefunden (${phrase.de}${powerText}).`,
+    es: `Contador ${id} encontrado (${phrase.es}${powerText}).`,
   };
 }

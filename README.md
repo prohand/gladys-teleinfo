@@ -12,7 +12,8 @@ Built from the official
 [JavaScript template](https://github.com/GladysAssistant/integration-template-js)
 with [`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js).
 
-User documentation: [`docs/fr.md`](docs/fr.md) / [`docs/en.md`](docs/en.md).
+User documentation: [`docs/fr.md`](docs/fr.md) / [`docs/en.md`](docs/en.md) /
+[`docs/de.md`](docs/de.md) / [`docs/es.md`](docs/es.md).
 
 ## How it works
 
@@ -51,9 +52,9 @@ reads the stream over TCP.
 │  ├─ teleinfo/labels.js        # TIC label -> Gladys feature
 │  ├─ teleinfo/meter.js         # one meter -> device + states
 │  ├─ teleinfo/hub.js           # meters registry, throttled publication
-│  ├─ status.js                 # bilingual status / action messages
+│  ├─ status.js                 # status / action messages (en, fr, de, es)
 │  └─ config.js                 # config defaults + normalization
-├─ docs/{en,fr}.md              # user documentation (re-hosted by Gladys)
+├─ docs/{en,fr,de,es}.md        # user documentation (re-hosted by Gladys)
 ├─ test/                        # unit tests (node --test), no network
 ├─ gladys-assistant-integration.json
 └─ Dockerfile                   # Node 24 Alpine, read-only rootfs ready

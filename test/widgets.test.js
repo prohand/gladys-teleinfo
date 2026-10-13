@@ -55,6 +55,29 @@ for (const [mode, bytes] of [
   });
 }
 
+// Every multi-language text of a content (any object carrying `en`).
+function texts(node) {
+  if (Array.isArray(node)) return node.flatMap(texts);
+  if (node === null || typeof node !== 'object') return [];
+  if (typeof node.en === 'string') return [node];
+  return Object.values(node).flatMap(texts);
+}
+
+test('every widget text is in English, French, German and Spanish', async () => {
+  for (const bytes of [historicFrame(HISTORIC_HC), standardFrame(STANDARD_LINKY)]) {
+    const { get, advance } = await setup(bytes);
+    const live = await get();
+    advance(STALE_MS + 1);
+    const silent = await get();
+    const waiting = await get('ext:teleinfo:meter:000000000000');
+    const all = [live, silent, waiting].flatMap(texts);
+    assert.ok(all.length > 0);
+    for (const text of all) {
+      assert.deepEqual(Object.keys(text).sort(), ['de', 'en', 'es', 'fr'], text.en);
+    }
+  }
+});
+
 test('the historic index tile is the computed total', async () => {
   const { get } = await setup(historicFrame(HISTORIC_HC));
   const index = (await get()).components.find((c) => c.icon === 'activity');
