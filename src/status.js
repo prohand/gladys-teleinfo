@@ -35,7 +35,7 @@ export function connectionStatusOf(status, { config, detail } = {}) {
         message: {
           en: 'Enter the address of the ser2net bridge in the configuration.',
           fr: "Indiquez l'adresse de la passerelle ser2net dans la configuration.",
-          de: 'Tragen Sie die Adresse der ser2net-Bridge in der Konfiguration ein.',
+          de: 'Trage die Adresse der ser2net-Bridge in der Konfiguration ein.',
           es: 'Introduzca la dirección de la pasarela ser2net en la configuración.',
         },
       };
@@ -47,7 +47,7 @@ export function connectionStatusOf(status, { config, detail } = {}) {
         message: {
           en: `Connected to ${address}, but no valid TIC frame: check the ser2net speed (1200 or 9600 bauds, 7E1) and the meter wiring.`,
           fr: `Connecté à ${address}, mais aucune trame TIC valide : vérifiez la vitesse ser2net (1200 ou 9600 bauds, 7E1) et le câblage du compteur.`,
-          de: `Verbunden mit ${address}, aber kein gültiger TIC-Frame: Prüfen Sie die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
+          de: `Verbunden mit ${address}, aber kein gültiger TIC-Frame: Prüfe die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
           es: `Conectado a ${address}, pero sin ninguna trama TIC válida: compruebe la velocidad de ser2net (1200 o 9600 baudios, 7E1) y el cableado del contador.`,
         },
       };
@@ -76,7 +76,7 @@ export async function testConnection(hub, timeoutMs = TEST_TIMEOUT_MS) {
     return {
       en: `No TIC frame received in ${timeoutMs / 1000} s. Check the bridge address, the ser2net speed (1200 or 9600 bauds, 7E1) and the meter wiring.`,
       fr: `Aucune trame TIC reçue en ${timeoutMs / 1000} s. Vérifiez l'adresse de la passerelle, la vitesse ser2net (1200 ou 9600 bauds, 7E1) et le câblage du compteur.`,
-      de: `Kein TIC-Frame in ${timeoutMs / 1000} s empfangen. Prüfen Sie die Adresse der Bridge, die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
+      de: `Kein TIC-Frame in ${timeoutMs / 1000} s empfangen. Prüfe die Adresse der Bridge, die ser2net-Geschwindigkeit (1200 oder 9600 Baud, 7E1) und die Verkabelung des Zählers.`,
       es: `No se ha recibido ninguna trama TIC en ${timeoutMs / 1000} s. Compruebe la dirección de la pasarela, la velocidad de ser2net (1200 o 9600 baudios, 7E1) y el cableado del contador.`,
     };
   }

@@ -5,7 +5,7 @@
   "description": {
     "en": "Reads your Linky or electronic meter through the LiXee TIC module.",
     "fr": "Lit votre compteur Linky ou électronique via le module TIC LiXee.",
-    "de": "Liest Ihren Linky- oder elektronischen Zähler über das LiXee-TIC-Modul aus.",
+    "de": "Liest deinen Linky- oder elektronischen Zähler über das LiXee-TIC-Modul aus.",
     "es": "Lee su contador Linky o electrónico a través del módulo TIC LiXee."
   },
   "version": "1.1.1",
@@ -27,7 +27,7 @@
       "description": {
         "en": "Gladys integrations cannot open a USB port. Plug the LiXee TIC module into a machine of your network and share it with ser2net (raw TCP, 1200 bauds 7E1 in historic mode, 9600 bauds 7E1 in standard mode), then enter its address below.",
         "fr": "Les intégrations Gladys ne peuvent pas ouvrir un port USB. Branchez le module TIC LiXee sur une machine de votre réseau et partagez-le avec ser2net (TCP brut, 1200 bauds 7E1 en mode historique, 9600 bauds 7E1 en mode standard), puis indiquez son adresse ci-dessous.",
-        "de": "Gladys-Integrationen können keinen USB-Port öffnen. Schließen Sie das LiXee-TIC-Modul an einen Rechner in Ihrem Netzwerk an, geben Sie es mit ser2net frei (rohes TCP, 1200 Baud 7E1 im historischen Modus, 9600 Baud 7E1 im Standardmodus) und tragen Sie dann unten seine Adresse ein.",
+        "de": "Gladys-Integrationen können keinen USB-Port öffnen. Schließ das LiXee-TIC-Modul an einen Rechner in deinem Netzwerk an, gib es mit ser2net frei (rohes TCP, 1200 Baud 7E1 im historischen Modus, 9600 Baud 7E1 im Standardmodus) und trage dann unten seine Adresse ein.",
         "es": "Las integraciones de Gladys no pueden abrir un puerto USB. Conecte el módulo TIC LiXee a un equipo de su red, compártalo con ser2net (TCP sin procesar, 1200 baudios 7E1 en modo histórico, 9600 baudios 7E1 en modo estándar) y después introduzca su dirección a continuación."
       },
       "links": [

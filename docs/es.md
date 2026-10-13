@@ -75,7 +75,7 @@ antes de continuar: ser2net solo acepta un cliente a la vez.
    han cambiado, además de una actualización completa cada 10 minutos.
 5. Guarde y pulse **Probar la conexión**: aparecen el número del contador y
    la potencia actual.
-6. Vaya a la pestaña **Descubrir** y añada el contador.
+6. Vaya a la pestaña **Descubrir** y añada el contador con **Añadir a Gladys**.
 
 ## Valores
 
@@ -113,7 +113,8 @@ En el editor de escenas, categoría **Integraciones**:
 
 ## Panel (Gladys 5.1 o posterior)
 
-Añada el widget **Contador eléctrico** y elija el contador: potencia en
+Añada el widget **Contador eléctrico** (**Panel → Editar → Nuevo widget**, en
+**Widgets de integraciones**) y elija el contador: potencia en
 directo, lectura total, curva de potencia de 24 h, periodo tarifario,
 sobrecarga y recepción de tramas.
 
@@ -125,5 +126,5 @@ sobrecarga y recepción de tramas.
   (1200 / 9600), formato incorrecto (`e71` es obligatorio: 7 bits, paridad
   par) o módulo mal conectado al contador.
 - **El contador no aparece en Descubrir**: espere a la primera trama (unos
-  segundos) y luego actualice.
+  segundos) y luego pulse **Buscar**.
 - Registros detallados: variable de entorno `LOG_LEVEL=debug`.

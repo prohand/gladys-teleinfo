@@ -74,7 +74,7 @@ going on: ser2net accepts one client at a time.
    plus a full refresh every 10 minutes.
 5. Save, then click **Test the connection**: the meter number and the current
    power show up.
-6. Go to the **Discovery** tab and add the meter.
+6. Go to the **Discover** tab and add the meter with **Add to Gladys**.
 
 ## Values
 
@@ -110,7 +110,8 @@ In the scene editor, **Integrations** category:
 
 ## Dashboard (Gladys 5.1 or later)
 
-Add the **Electricity meter** widget and pick the meter: live power, total
+Add the **Electricity meter** widget (**Dashboard → Edit → New widget**, under
+**Integration widgets**) and pick the meter: live power, total
 index, 24 h power curve, tariff period, overload and frame reception.
 
 ## Troubleshooting
@@ -119,6 +120,6 @@ index, 24 h power curve, tariff period, overload and frame reception.
 - **"Connected, but no valid TIC frame"**: wrong speed (1200 / 9600), wrong
   format (`e71` is required: 7 bits, even parity), or module badly wired to
   the meter.
-- **The meter does not show up in Discovery**: wait for the first frame (a
-  few seconds), then refresh.
+- **The meter does not show up in the Discover tab**: wait for the first frame
+  (a few seconds), then press **Scan**.
 - Detailed logs: `LOG_LEVEL=debug` environment variable.

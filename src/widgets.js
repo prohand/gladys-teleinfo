@@ -45,7 +45,7 @@ const WAITING = {
       text: {
         en: 'Waiting for the meter frames. Check the bridge with the "Test the connection" button of the integration.',
         fr: "En attente des trames du compteur. Vérifiez la passerelle avec le bouton « Tester la connexion » de l'intégration.",
-        de: 'Warten auf die Frames des Zählers. Prüfen Sie die Bridge mit der Schaltfläche „Verbindung testen“ der Integration.',
+        de: 'Warten auf die Frames des Zählers. Prüfe die Bridge mit der Schaltfläche „Verbindung testen“ der Integration.',
         es: 'Esperando las tramas del contador. Compruebe la pasarela con el botón «Probar la conexión» de la integración.',
       },
     },
