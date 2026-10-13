@@ -73,7 +73,7 @@ no protocol logic. Everything else lives under `src/`:
   fire, `TeleinfoHub.fireSceneEvent()` sends them.
 - **`src/scenes.js`** — the `read_meter` scene action (`createSceneActions(hub)`).
 - **`src/widgets.js`** — the `meter` dashboard widget (`createWidgets(hub)`).
-- **`src/status.js`** — the bilingual connection status and the "Test the connection" message.
+- **`src/status.js`** — the connection status (en/fr/de/es) and the "Test the connection" message.
 - **`src/config.js`** — defaults and normalization.
 
 ### Why TCP and not the USB port
@@ -152,7 +152,7 @@ The traps, each pinned by a test in `test/manifest.test.js`:
 
 - the free-text field type is **`string`**, not `text`;
 - `label`, `description` and `placeholder` are multi-language **objects**, never bare strings;
-- the catalog `description.en` / `.fr` hold **10 to 100 characters**;
+- the catalog `description` holds **10 to 100 characters** per language (`en`, `fr`, `de`, `es`);
 - **`categories` costs a `gladys_version` floor of `>=4.86.0`**; ours is `["energy"]`;
 - `transports` is `["local"]` (LAN only): a single channel, so no "Prefer the local
   connection" toggle and no per-device `publishTransports` badge;
@@ -182,8 +182,8 @@ requires the user to update the already-created device from the Discovery screen
 Comments explain **why**, not what — particularly the core constraints above, which look arbitrary
 without their reason. Keep the protocol pure (`frame.js`, `labels.js`, `meter.js` never touch the
 network) so it stays testable offline. Feature names are French, like the TIC and the core
-mapping; every user-facing message (status, action answer, manifest texts, docs) is an `en`/`fr`
-pair, and `docs/en.md` / `docs/fr.md` stay in sync.
+mapping; every user-facing message (status, action answer, widget, manifest texts, docs) is
+`{ en, fr, de, es }`, and `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md` stay in sync.
 
 The container rootfs is read-only: write only under `/data`. The meter serial number and the
 bridge address may appear in logs (they are needed to diagnose); the raw frames never do.

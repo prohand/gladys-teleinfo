@@ -24,6 +24,18 @@ const PERIOD_COLORS = {
   [PERIOD_TYPES.OTHER]: WIDGET_COLORS.NEUTRAL,
 };
 
+const YES = { en: 'Yes', fr: 'Oui', de: 'Ja', es: 'Sí' };
+const NO = { en: 'No', fr: 'Non', de: 'Nein', es: 'No' };
+const RECEPTION_OK = { en: 'OK', fr: 'OK', de: 'OK', es: 'OK' };
+const RECEPTION_INTERRUPTED = {
+  en: 'Interrupted',
+  fr: 'Interrompue',
+  de: 'Unterbrochen',
+  es: 'Interrumpida',
+};
+const MODE_STANDARD = { en: 'Standard', fr: 'Standard', de: 'Standard', es: 'Estándar' };
+const MODE_HISTORIC = { en: 'Historic', fr: 'Historique', de: 'Historisch', es: 'Histórico' };
+
 const WAITING = {
   ttl_seconds: 30,
   components: [
@@ -33,6 +45,8 @@ const WAITING = {
       text: {
         en: 'Waiting for the meter frames. Check the bridge with the "Test the connection" button of the integration.',
         fr: "En attente des trames du compteur. Vérifiez la passerelle avec le bouton « Tester la connexion » de l'intégration.",
+        de: 'Warten auf die Frames des Zählers. Prüfen Sie die Bridge mit der Schaltfläche „Verbindung testen“ der Integration.',
+        es: 'Esperando las tramas del contador. Compruebe la pasarela con el botón «Probar la conexión» de la integración.',
       },
     },
   ],
@@ -56,7 +70,7 @@ export function meterWidgetContent(gladys, meter, now) {
   if (powerFeature) {
     components.push({
       type: 'value',
-      label: { en: 'Power', fr: 'Puissance' },
+      label: { en: 'Power', fr: 'Puissance', de: 'Leistung', es: 'Potencia' },
       icon: 'zap',
       device_feature: powerFeature,
     });
@@ -69,13 +83,13 @@ export function meterWidgetContent(gladys, meter, now) {
       eastFeature
         ? {
             type: 'value',
-            label: { en: 'Index', fr: 'Index' },
+            label: { en: 'Index', fr: 'Index', de: 'Zählerstand', es: 'Lectura' },
             icon: 'activity',
             device_feature: eastFeature,
           }
         : {
             type: 'value',
-            label: { en: 'Index', fr: 'Index' },
+            label: { en: 'Index', fr: 'Index', de: 'Zählerstand', es: 'Lectura' },
             icon: 'activity',
             value: Math.floor(reading.indexKwh),
             unit: 'kWh',
@@ -86,7 +100,12 @@ export function meterWidgetContent(gladys, meter, now) {
     components.push({
       type: 'chart',
       chart_type: 'area',
-      title: { en: 'Power, last 24 h', fr: 'Puissance, 24 h' },
+      title: {
+        en: 'Power, last 24 h',
+        fr: 'Puissance, 24 h',
+        de: 'Leistung, 24 h',
+        es: 'Potencia, 24 h',
+      },
       device_features: [powerFeature],
       interval: 'last-day',
     });
@@ -97,7 +116,12 @@ export function meterWidgetContent(gladys, meter, now) {
   const items = [];
   if (reading.period !== null) {
     items.push({
-      label: { en: 'Tariff period', fr: 'Période tarifaire' },
+      label: {
+        en: 'Tariff period',
+        fr: 'Période tarifaire',
+        de: 'Tarifzeitraum',
+        es: 'Periodo tarifario',
+      },
       icon: 'clock',
       value: reading.period,
       color: PERIOD_COLORS[reading.periodType],
@@ -105,21 +129,21 @@ export function meterWidgetContent(gladys, meter, now) {
   }
   items.push(
     {
-      label: { en: 'Overload', fr: 'Dépassement' },
+      label: { en: 'Overload', fr: 'Dépassement', de: 'Überschreitung', es: 'Sobrecarga' },
       icon: 'alert-triangle',
-      value: overload ? { en: 'Yes', fr: 'Oui' } : { en: 'No', fr: 'Non' },
+      value: overload ? YES : NO,
       color: overload ? WIDGET_COLORS.DANGER : WIDGET_COLORS.SUCCESS,
     },
     {
-      label: { en: 'Reception', fr: 'Réception' },
+      label: { en: 'Reception', fr: 'Réception', de: 'Empfang', es: 'Recepción' },
       icon: 'radio',
-      value: receiving ? { en: 'OK', fr: 'OK' } : { en: 'Interrupted', fr: 'Interrompue' },
+      value: receiving ? RECEPTION_OK : RECEPTION_INTERRUPTED,
       color: receiving ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.DANGER,
     },
     {
-      label: { en: 'TIC mode', fr: 'Mode TIC' },
+      label: { en: 'TIC mode', fr: 'Mode TIC', de: 'TIC-Modus', es: 'Modo TIC' },
       icon: 'info',
-      value: standard ? { en: 'Standard', fr: 'Standard' } : { en: 'Historic', fr: 'Historique' },
+      value: standard ? MODE_STANDARD : MODE_HISTORIC,
       color: WIDGET_COLORS.NEUTRAL,
     },
   );

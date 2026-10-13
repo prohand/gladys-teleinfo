@@ -177,13 +177,49 @@ test('the catalog description holds 10 to 100 characters per language', () => {
   }
 });
 
-test('every text is bilingual, placeholders included', () => {
+// Every text the user reads is in the four languages of the Gladys UI.
+const LANGUAGES = ['de', 'en', 'es', 'fr'];
+
+// Every multi-language object of the manifest (any object carrying `en`),
+// with its path, wherever it sits: catalog description, fields, options,
+// section texts and links, scene and widget declarations.
+function multiLanguageTexts(node, path = 'manifest') {
+  if (Array.isArray(node)) {
+    return node.flatMap((child, i) => multiLanguageTexts(child, `${path}[${i}]`));
+  }
+  if (node === null || typeof node !== 'object') {
+    return [];
+  }
+  if (typeof node.en === 'string') {
+    return [{ path, text: node }];
+  }
+  return Object.entries(node).flatMap(([key, child]) =>
+    multiLanguageTexts(child, `${path}.${key}`),
+  );
+}
+
+test('every text is in English, French, German and Spanish, placeholders included', () => {
   for (const field of allFields) {
     for (const key of ['label', 'description', 'placeholder']) {
       if (field[key] !== undefined) {
         assert.equal(typeof field[key], 'object', `field "${field.key}": ${key}`);
-        assert.ok(field[key].en && field[key].fr, `field "${field.key}": ${key} needs en + fr`);
       }
+    }
+  }
+  const texts = multiLanguageTexts(manifest);
+  assert.ok(texts.length > 0);
+  for (const { path, text } of texts) {
+    assert.deepEqual(Object.keys(text).sort(), LANGUAGES, `${path} languages`);
+    for (const lang of LANGUAGES) {
+      assert.ok(text[lang].trim().length > 0, `${path}.${lang} is empty`);
+    }
+  }
+});
+
+test('section texts hold at most 1000 characters per language', () => {
+  for (const section of manifest.config_schema.filter((f) => f.type === 'section')) {
+    for (const [lang, text] of Object.entries(section.description ?? {})) {
+      assert.ok(text.length <= 1000, `section "${section.key}": description.${lang} too long`);
     }
   }
 });
