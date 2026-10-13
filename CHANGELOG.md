@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-13
+
 ### Added
 
 - German and Spanish translations (configuration screen, messages, widgets, documentation).
@@ -61,7 +63,8 @@ All notable changes to this integration are documented here. The format follows
   store admission checks; Dependabot keeps the npm dependencies, the GitHub Actions and the
   Docker base image up to date.
 
-[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/prohand/gladys-teleinfo/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/prohand/gladys-teleinfo/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/prohand/gladys-teleinfo/compare/v1.0.1...v1.0.2
