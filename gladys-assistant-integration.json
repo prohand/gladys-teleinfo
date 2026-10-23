@@ -8,8 +8,8 @@
     "de": "Liest deinen Linky- oder elektronischen Zähler über das LiXee-TIC-Modul aus.",
     "es": "Lee su contador Linky o electrónico a través del módulo TIC LiXee."
   },
-  "version": "1.2.1",
-  "docker_image": "ghcr.io/prohand/gladys-teleinfo:1.2.1",
+  "version": "1.2.2",
+  "docker_image": "ghcr.io/prohand/gladys-teleinfo:1.2.2",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-teleinfo/main/cover.png",
   "categories": ["energy"],

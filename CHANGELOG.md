@@ -6,6 +6,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-23
+
+- Maintenance release, no functional change.
+
 ## [1.2.1] - 2026-10-23
 
 - Maintenance release, no functional change.
@@ -67,7 +71,8 @@ All notable changes to this integration are documented here. The format follows
   store admission checks; Dependabot keeps the npm dependencies, the GitHub Actions and the
   Docker base image up to date.
 
-[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-teleinfo/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/prohand/gladys-teleinfo/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/prohand/gladys-teleinfo/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/prohand/gladys-teleinfo/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/prohand/gladys-teleinfo/compare/v1.1.0...v1.1.1
