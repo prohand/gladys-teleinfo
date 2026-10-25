@@ -40,6 +40,28 @@ const keysOf = (list) => (list ?? []).map((entry) => entry.key);
 const CAPABILITY_FIELDS = ['scene_triggers', 'scene_actions', 'widgets'];
 const CAPABILITY_MIN_GLADYS_VERSION = [5, 1, 0];
 const CATEGORIES_MIN_GLADYS_VERSION = [4, 86, 0];
+const DISCOVERY_FIELDS = ['keywords', 'countries', 'music'];
+const DISCOVERY_MIN_GLADYS_VERSION = [5, 3, 0];
+
+// The store vocabulary of catalog shelves (Gladys 5.3 added the last four).
+const CATALOG_CATEGORIES = [
+  'climate',
+  'lighting',
+  'energy',
+  'security',
+  'multimedia',
+  'appliances',
+  'environment',
+  'protocols',
+  'network',
+  'notifications',
+  'assistants',
+  'services',
+  'transport',
+  'vehicles',
+  'servers',
+  'leisure',
+];
 
 // Minimum version of the manifest `gladys_version` range, e.g. [4, 86, 0].
 function minGladysVersion() {
@@ -80,6 +102,39 @@ test('scene triggers, scene actions and widgets require Gladys >= 5.1.0', () => 
     isAtLeast(minGladysVersion(), CAPABILITY_MIN_GLADYS_VERSION),
     `${declared.join(', ')} requires gladys_version >= 5.1.0, got "${manifest.gladys_version}"`,
   );
+});
+
+test('catalog categories are unique keys of the store vocabulary', () => {
+  assert.equal(new Set(manifest.categories).size, manifest.categories.length);
+  for (const category of manifest.categories) {
+    assert.ok(CATALOG_CATEGORIES.includes(category), `unknown category "${category}"`);
+  }
+});
+
+test('keywords, countries and music require Gladys >= 5.3.0', () => {
+  const declared = DISCOVERY_FIELDS.filter((field) => manifest[field] !== undefined);
+  if (declared.length > 0) {
+    assert.ok(
+      isAtLeast(minGladysVersion(), DISCOVERY_MIN_GLADYS_VERSION),
+      `${declared.join(', ')} requires gladys_version >= 5.3.0, got "${manifest.gladys_version}"`,
+    );
+  }
+});
+
+test('search keywords: 1 to 10 unique strings of 2 to 30 characters', () => {
+  const { keywords } = manifest;
+  assert.ok(Array.isArray(keywords) && keywords.length >= 1 && keywords.length <= 10);
+  const normalized = keywords.map((keyword) => keyword.trim().toLowerCase());
+  assert.equal(new Set(normalized).size, keywords.length, 'keywords must be unique');
+  for (const keyword of normalized) {
+    assert.ok(keyword.length >= 2 && keyword.length <= 30, `keyword "${keyword}"`);
+  }
+});
+
+test('the integration is listed for France only', () => {
+  // The TIC is the customer interface of the Enedis meters (Linky and the
+  // electronic meters before it): a French grid only.
+  assert.deepEqual(manifest.countries, ['FR']);
 });
 
 test('every scene trigger the code fires is declared, and vice versa', () => {

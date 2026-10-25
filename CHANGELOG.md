@@ -6,6 +6,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Store search keywords (Enedis, ZLinky, ser2net, téléinformation, heures creuses,
+  Tempo…) and the country the integration is offered in (France).
+
+### Changed
+
+- Gladys 5.3.0 or later is now required.
+- Gladys integration SDK 0.16.
+
 ## [1.2.2] - 2026-10-23
 
 - Maintenance release, no functional change. It publishes 1.2.1, which never

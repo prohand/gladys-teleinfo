@@ -32,12 +32,12 @@ socket: `TcpSource` takes an injected `createConnection`, and frames are built b
 Before tagging a release, check the manifest against the real store rules:
 
 ```bash
-npx github:GladysAssistant/integration-store .
+npx github:GladysAssistant/integration-store --skip-image-check .
 ```
 
-Two findings are expected before a release exists: the `docker_image` tag is not on ghcr.io yet,
-and `cover_image` 404s until the branch is pushed. For the same reason the CI `store` job fails on
-pull requests until the first release is published.
+The `docker_image` tag of a version is only on ghcr.io once the Release workflow built it: the
+pull-request CI `store` job skips that check (`--skip-image-check`), and the Release workflow runs
+the full check, image included, on the tag once the image is published.
 
 Run locally against a real Gladys:
 
@@ -156,7 +156,9 @@ The traps, each pinned by a test in `test/manifest.test.js`:
 - **`categories` costs a `gladys_version` floor of `>=4.86.0`**; ours is `["energy"]`;
 - `transports` is `["local"]` (LAN only): a single channel, so no "Prefer the local
   connection" toggle and no per-device `publishTransports` badge;
-- `widgets`, `scene_triggers`, `scene_actions` cost a floor of **`>=5.1.0`** (ours); a widget
+- `keywords` and `countries` cost a floor of **`>=5.3.0`** (ours); keywords are 1 to 10
+  strings of 2 to 30 characters, `countries` is `["FR"]` (Enedis meters only);
+- `widgets`, `scene_triggers`, `scene_actions` cost a floor of **`>=5.1.0`**; a widget
   label is 3-30 characters, its description ≤ 100; a trigger field cannot be `boolean`;
 - the trigger keys equal `SCENE_TRIGGERS`, the action and widget keys equal the factories' keys;
 - every manifest `actions` key has a `gladys.onAction(...)` in `index.js`, and vice versa;

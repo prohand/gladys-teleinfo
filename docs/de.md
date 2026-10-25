@@ -13,6 +13,7 @@ Tarifzeitraum…
 - Einen Rechner in deinem Netzwerk, an den das Modul per USB angeschlossen ist
   (der Gladys-Server selbst oder ein Raspberry Pi neben dem Stromverteiler).
 - **ser2net** auf diesem Rechner.
+- **Gladys 5.3.0 oder neuer**.
 
 ## Warum ser2net?
 
