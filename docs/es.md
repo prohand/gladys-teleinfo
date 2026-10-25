@@ -13,6 +13,7 @@ tarifario actual…
 - Un equipo de su red al que el módulo esté conectado por USB (el propio
   servidor Gladys o una Raspberry Pi junto al cuadro eléctrico).
 - **ser2net** en ese equipo.
+- **Gladys 5.3.0 o posterior**.
 
 ## ¿Por qué ser2net?
 

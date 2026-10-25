@@ -12,6 +12,7 @@ apparent power, current, voltage, current tariff period…
 - A machine of your network the module is plugged into over USB (the Gladys
   server itself, or a Raspberry Pi next to the electrical panel).
 - **ser2net** on that machine.
+- **Gladys 5.3.0 or later**.
 
 ## Why ser2net?
 
